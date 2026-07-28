@@ -16,12 +16,13 @@ Finnova/
 - Organize folders on both sides (controller/service/repository/entity/dto/config/security/exception/utils for backend; components/pages/hooks/redux/services/utils/assets for frontend)
 
 ## Backend setup (Member A)
-Requirements: JDK 21, Maven, MySQL running locally.
+Requirements: JDK 17+, Maven, MySQL (or MariaDB, e.g. via XAMPP) running locally on port 3306.
 
-1. Create the database: `CREATE DATABASE finnova_db;`
-2. Set `DB_USERNAME` / `DB_PASSWORD` env vars if not using the `root`/`root` defaults in `backend/src/main/resources/application.properties`
-3. From `backend/`, run `mvn spring-boot:run`
-4. API starts on `http://localhost:8080`
+1. Start your MySQL/MariaDB server (e.g. the XAMPP Control Panel's MySQL module)
+2. Create the database: `CREATE DATABASE finnova_db;`
+3. Defaults in `backend/src/main/resources/application.properties` assume `root` with no password (XAMPP's default) — set `DB_USERNAME` / `DB_PASSWORD` env vars if yours differs
+4. From `backend/`, run `mvn spring-boot:run`
+5. API starts on `http://localhost:8080`; Hibernate auto-creates the `users`, `roles`, and `user_roles` tables on first run
 
 ## Frontend setup (Member B)
 1. Install Node.js and npm
