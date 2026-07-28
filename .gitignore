@@ -1,3 +1,22 @@
+# Frontend
 node_modules/
 dist/
 .vite/
+
+# Backend (Maven / Java)
+backend/target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Word lock files
+~$*.docx
+~$*.doc
