@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import { FaWallet, FaBars } from 'react-icons/fa'
 
 function Layout({ children }) {
+  const auth = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
@@ -14,6 +18,22 @@ function Layout({ children }) {
             <a href="#features" className="hover:text-emerald-600">Features</a>
             <a href="#about" className="hover:text-emerald-600">About</a>
             <a href="#contact" className="hover:text-emerald-600">Contact</a>
+            {auth.isAuthenticated ? (
+              <>
+                <Link to="/dashboard" className="hover:text-emerald-600">Dashboard</Link>
+                <button
+                  onClick={() => dispatch({ type: 'auth/logout' })}
+                  className="hover:text-emerald-600"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="hover:text-emerald-600">Login</Link>
+                <Link to="/register" className="hover:text-emerald-600">Register</Link>
+              </>
+            )}
           </nav>
           <button className="rounded-full border border-slate-200 p-2 text-slate-600 md:hidden">
             <FaBars />
