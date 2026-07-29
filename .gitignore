@@ -8,6 +8,7 @@ backend/target/
 *.class
 *.jar
 !.mvn/wrapper/maven-wrapper.jar
+backend/run.log
 
 # IDE
 .idea/
