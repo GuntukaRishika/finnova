@@ -15,8 +15,14 @@ Finnova/
 - Frontend: React + Vite with Tailwind CSS, landing page, navbar, footer, 404 page
 - Organize folders on both sides (controller/service/repository/entity/dto/config/security/exception/utils for backend; components/pages/hooks/redux/services/utils/assets for frontend)
 
+## Week 2 scope
+- Backend: user registration & login, JWT access + refresh tokens, BCrypt password hashing, Spring Security, role-based auth
+- APIs: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`
+- `ROLE_USER` / `ROLE_ADMIN` seeded automatically on startup; new registrations get `ROLE_USER`
+- All non-`/api/auth/**` endpoints require a valid `Authorization: Bearer <token>` header
+
 ## Backend setup (Member A)
-Requirements: JDK 17+, Maven, MySQL (or MariaDB, e.g. via XAMPP) running locally on port 3306.
+Requirements: JDK 21 (an LTS build — **not JDK 26**, whose class files Lombok's annotation processor doesn't support yet), Maven, MySQL (or MariaDB, e.g. via XAMPP) running locally on port 3306.
 
 1. Start your MySQL/MariaDB server (e.g. the XAMPP Control Panel's MySQL module)
 2. Create the database: `CREATE DATABASE finnova_db;`
