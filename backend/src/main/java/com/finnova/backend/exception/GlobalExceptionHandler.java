@@ -36,4 +36,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<MessageResponse> handleTokenRefresh(TokenRefreshException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new MessageResponse(ex.getMessage()));
     }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<MessageResponse> handleResourceNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(ex.getMessage()));
+    }
 }
