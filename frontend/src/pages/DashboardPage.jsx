@@ -1,19 +1,16 @@
 import { useSelector } from 'react-redux'
-import { Navigate } from 'react-router-dom'
 import { FaMoneyBillWave, FaPiggyBank, FaChartPie } from 'react-icons/fa'
 
 function DashboardPage() {
   const auth = useSelector((state) => state.auth)
 
-  if (!auth.isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-
   return (
     <div className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-8">
         <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-600">Dashboard</p>
-        <h1 className="mt-2 text-3xl font-semibold text-slate-900">Welcome back, {auth.user?.name || 'there'}.</h1>
+        <h1 className="mt-2 text-3xl font-semibold text-slate-900">
+          Welcome back, {auth.user?.username || 'there'}.
+        </h1>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">

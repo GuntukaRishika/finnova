@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { FaWallet, FaBars } from 'react-icons/fa'
+import { loggedOut } from '../redux/authSlice'
 
 function Layout({ children }) {
   const auth = useSelector((state) => state.auth)
@@ -22,7 +23,7 @@ function Layout({ children }) {
               <>
                 <Link to="/dashboard" className="hover:text-emerald-600">Dashboard</Link>
                 <button
-                  onClick={() => dispatch({ type: 'auth/logout' })}
+                  onClick={() => dispatch(loggedOut())}
                   className="hover:text-emerald-600"
                 >
                   Logout

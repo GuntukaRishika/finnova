@@ -2,6 +2,7 @@
 node_modules/
 dist/
 .vite/
+frontend/vite.log
 
 # Backend (Maven / Java)
 backend/target/
