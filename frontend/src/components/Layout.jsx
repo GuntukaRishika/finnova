@@ -22,6 +22,7 @@ function Layout({ children }) {
             {auth.isAuthenticated ? (
               <>
                 <Link to="/dashboard" className="hover:text-emerald-600">Dashboard</Link>
+                <Link to="/income" className="hover:text-emerald-600">Income</Link>
                 <button
                   onClick={() => dispatch(loggedOut())}
                   className="hover:text-emerald-600"
