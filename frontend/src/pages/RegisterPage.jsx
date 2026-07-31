@@ -1,17 +1,27 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
 import { FaUser, FaEnvelope, FaLock, FaArrowRight } from 'react-icons/fa'
+import { register } from '../api/authApi'
 
 function RegisterPage() {
-  const dispatch = useDispatch()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const [form, setForm] = useState({ username: '', email: '', password: '' })
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    dispatch({ type: 'auth/login', payload: { email: form.email, name: form.name } })
-    navigate('/dashboard')
+    setError('')
+    setIsSubmitting(true)
+
+    try {
+      await register(form)
+      navigate('/login', { state: { registered: true } })
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not create your account.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -31,17 +41,23 @@ function RegisterPage() {
             <p className="mt-2 text-sm text-slate-600">Set up your account in one step.</p>
           </div>
 
+          {error && (
+            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
+          )}
+
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Name</span>
+            <span className="mb-2 block text-sm font-medium text-slate-700">Username</span>
             <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
               <FaUser className="text-slate-400" />
               <input
                 type="text"
                 required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                minLength={3}
+                maxLength={50}
+                value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
                 className="w-full bg-transparent outline-none"
-                placeholder="Ava Stone"
+                placeholder="ava_stone"
               />
             </div>
           </label>
@@ -68,6 +84,7 @@ function RegisterPage() {
               <input
                 type="password"
                 required
+                minLength={6}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 className="w-full bg-transparent outline-none"
@@ -78,9 +95,10 @@ function RegisterPage() {
 
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 font-medium text-white transition hover:bg-emerald-700"
+            disabled={isSubmitting}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Create account <FaArrowRight />
+            {isSubmitting ? 'Creating account...' : 'Create account'} <FaArrowRight />
           </button>
 
           <p className="text-center text-sm text-slate-600">
