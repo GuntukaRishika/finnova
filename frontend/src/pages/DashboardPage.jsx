@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { FaMoneyBillWave, FaPiggyBank, FaChartPie } from 'react-icons/fa'
 
 function DashboardPage() {
@@ -14,13 +15,16 @@ function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <Link
+          to="/income"
+          className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
+        >
           <div className="flex items-center gap-3 text-emerald-600">
             <FaMoneyBillWave size={20} />
             <h2 className="text-lg font-semibold">Income</h2>
           </div>
           <p className="mt-4 text-sm text-slate-600">Monthly income overview and upcoming deposits.</p>
-        </div>
+        </Link>
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 text-emerald-600">
             <FaChartPie size={20} />
