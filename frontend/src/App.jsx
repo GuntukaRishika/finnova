@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import DashboardPage from './pages/DashboardPage'
 import IncomePage from './pages/IncomePage'
+import ExpensePage from './pages/ExpensePage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
           element={
             <ProtectedRoute>
               <IncomePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expense"
+          element={
+            <ProtectedRoute>
+              <ExpensePage />
             </ProtectedRoute>
           }
         />

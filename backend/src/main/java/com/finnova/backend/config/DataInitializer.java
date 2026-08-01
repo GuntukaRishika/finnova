@@ -24,7 +24,16 @@ public class DataInitializer implements CommandLineRunner {
         seedCategory("Freelance", "Freelance or contract work income");
         seedCategory("Investment", "Dividends, interest, capital gains");
         seedCategory("Gift", "Gifts received");
-        seedCategory("Other", "Miscellaneous income");
+
+        seedCategory("Food", "Groceries and dining");
+        seedCategory("Transportation", "Fuel, public transit, vehicle costs");
+        seedCategory("Housing", "Rent, mortgage, utilities");
+        seedCategory("Healthcare", "Medical expenses and insurance");
+        seedCategory("Entertainment", "Leisure and recreation");
+        seedCategory("Shopping", "Clothing, electronics, and general purchases");
+        seedCategory("Education", "Tuition, courses, books");
+
+        seedCategory("Other", "Miscellaneous income or expense");
     }
 
     private void seedRole(String name) {

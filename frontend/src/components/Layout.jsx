@@ -23,6 +23,7 @@ function Layout({ children }) {
               <>
                 <Link to="/dashboard" className="hover:text-emerald-600">Dashboard</Link>
                 <Link to="/income" className="hover:text-emerald-600">Income</Link>
+                <Link to="/expense" className="hover:text-emerald-600">Expense</Link>
                 <button
                   onClick={() => dispatch(loggedOut())}
                   className="hover:text-emerald-600"
