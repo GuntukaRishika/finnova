@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface IncomeRepository extends JpaRepository<Income, Long>, JpaSpecificationExecutor<Income> {
@@ -28,4 +29,11 @@ public interface IncomeRepository extends JpaRepository<Income, Long>, JpaSpecif
             "LOWER(i.description) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(i.category.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Income> search(@Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT i.category.id, i.category.name, COALESCE(SUM(i.amount), 0) FROM Income i " +
+            "WHERE i.user.id = :userId AND i.incomeDate BETWEEN :start AND :end " +
+            "GROUP BY i.category.id, i.category.name ORDER BY SUM(i.amount) DESC")
+    List<Object[]> sumAmountGroupByCategory(@Param("userId") Long userId,
+                                              @Param("start") LocalDate start,
+                                              @Param("end") LocalDate end);
 }
