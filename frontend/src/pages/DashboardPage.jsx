@@ -16,6 +16,8 @@ const categoryBreakdown = [
   { name: 'Utilities', amount: '$220', percent: '8%' },
 ]
 
+const categoryColors = ['#10b981', '#38bdf8', '#f97316', '#ef4444']
+
 const yearlySummary = [
   { label: 'Jan', value: 1100 },
   { label: 'Feb', value: 1400 },
@@ -86,18 +88,35 @@ function DashboardPage() {
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Category breakdown</h2>
           <p className="mt-1 text-sm text-slate-500">Top spending categories this month</p>
-          <div className="mt-6 space-y-4">
-            {categoryBreakdown.map((item) => (
-              <div key={item.name}>
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span className="font-medium text-slate-700">{item.name}</span>
-                  <span className="text-slate-500">{item.amount}</span>
+          <div className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_0.7fr]">
+            <div className="space-y-4">
+              {categoryBreakdown.map((item, index) => (
+                <div key={item.name}>
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="font-medium text-slate-700">{item.name}</span>
+                    <span className="text-slate-500">{item.amount}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-100">
+                    <div className="h-2 rounded-full" style={{ width: item.percent, backgroundColor: categoryColors[index] }} />
+                  </div>
                 </div>
-                <div className="h-2 rounded-full bg-slate-100">
-                  <div className="h-2 rounded-full bg-emerald-500" style={{ width: item.percent }} />
+              ))}
+            </div>
+            <div className="flex items-center justify-center">
+              <div
+                className="relative h-52 w-52 rounded-full"
+                style={{
+                  background: `conic-gradient(${categoryBreakdown
+                    .map((item, index) => `${categoryColors[index]} ${item.percent}`)
+                    .join(', ')})`,
+                }}
+              >
+                <div className="absolute inset-8 rounded-full bg-white shadow-sm flex flex-col items-center justify-center text-center">
+                  <p className="text-sm font-medium text-slate-500">Spending mix</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900">100%</p>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>
