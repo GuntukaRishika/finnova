@@ -161,7 +161,8 @@ function DashboardPage() {
                   <span className="font-medium text-slate-700">{item.name}</span>
                   <span className="text-slate-500">{item.amount}</span>
                 </div>
-              ))}
+              </div>
+            ))}
             </div>
             <div className="flex items-center justify-center">
               <div
@@ -180,7 +181,6 @@ function DashboardPage() {
             </div>
           </div>
         </div>
-      </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
