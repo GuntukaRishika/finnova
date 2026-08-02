@@ -11,6 +11,16 @@ function formatCurrency(value) {
   return currencyFormatter.format(Number(value) || 0)
 }
 
+const categoryColors = ['#10b981', '#38bdf8', '#f97316', '#ef4444']
+
+const yearlySummary = [
+  { label: 'Jan', value: 1100 },
+  { label: 'Feb', value: 1400 },
+  { label: 'Mar', value: 1250 },
+  { label: 'Apr', value: 1600 },
+  { label: 'May', value: 1500 },
+  { label: 'Jun', value: 1800 },
+]
 function formatChange(percent) {
   if (percent === null || percent === undefined) return '—'
   const value = Number(percent)
@@ -151,11 +161,23 @@ function DashboardPage() {
                   <span className="font-medium text-slate-700">{item.name}</span>
                   <span className="text-slate-500">{item.amount}</span>
                 </div>
-                <div className="h-2 rounded-full bg-slate-100">
-                  <div className="h-2 rounded-full bg-emerald-500" style={{ width: item.percent }} />
+              ))}
+            </div>
+            <div className="flex items-center justify-center">
+              <div
+                className="relative h-52 w-52 rounded-full"
+                style={{
+                  background: `conic-gradient(${categoryBreakdown
+                    .map((item, index) => `${categoryColors[index]} ${item.percent}`)
+                    .join(', ')})`,
+                }}
+              >
+                <div className="absolute inset-8 rounded-full bg-white shadow-sm flex flex-col items-center justify-center text-center">
+                  <p className="text-sm font-medium text-slate-500">Spending mix</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900">100%</p>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>
