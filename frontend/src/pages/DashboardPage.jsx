@@ -1,20 +1,15 @@
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { FaMoneyBillWave, FaPiggyBank, FaChartPie, FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6'
+import { getCategorySummary, getMonthlySummary, getYearlySummary } from '../api/dashboardApi'
 
-const summaryCards = [
-  { title: 'Monthly income', value: '$4,800', change: '+12.4%', trend: 'up' },
-  { title: 'Monthly expenses', value: '$2,640', change: '-4.2%', trend: 'down' },
-  { title: 'Cash flow', value: '$2,160', change: '+8.1%', trend: 'up' },
-]
+const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-const monthlySeries = [4200, 4500, 3800, 4700, 4900, 4800]
-const categoryBreakdown = [
-  { name: 'Housing', amount: '$900', percent: '34%' },
-  { name: 'Food', amount: '$360', percent: '14%' },
-  { name: 'Travel', amount: '$280', percent: '11%' },
-  { name: 'Utilities', amount: '$220', percent: '8%' },
-]
+function formatCurrency(value) {
+  return currencyFormatter.format(Number(value) || 0)
+}
 
 const categoryColors = ['#10b981', '#38bdf8', '#f97316', '#ef4444']
 
@@ -26,6 +21,11 @@ const yearlySummary = [
   { label: 'May', value: 1500 },
   { label: 'Jun', value: 1800 },
 ]
+function formatChange(percent) {
+  if (percent === null || percent === undefined) return '—'
+  const value = Number(percent)
+  return `${value > 0 ? '+' : ''}${value}%`
+}
 
 const recentTransactions = [
   { title: 'Salary deposit', type: 'Income', amount: '+$3,200', date: 'Today' },
@@ -35,6 +35,63 @@ const recentTransactions = [
 
 function DashboardPage() {
   const auth = useSelector((state) => state.auth)
+  const today = new Date()
+  const [monthlySummary, setMonthlySummary] = useState(null)
+  const [yearlySummary, setYearlySummary] = useState(null)
+  const [categorySummary, setCategorySummary] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const year = today.getFullYear()
+    const month = today.getMonth() + 1
+
+    Promise.all([
+      getMonthlySummary(year, month),
+      getYearlySummary(year),
+      getCategorySummary(year, month, 'EXPENSE'),
+    ])
+      .then(([monthly, yearly, category]) => {
+        setMonthlySummary(monthly)
+        setYearlySummary(yearly)
+        setCategorySummary(category)
+      })
+      .catch(() => setError('Unable to load dashboard data right now.'))
+      .finally(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const currentMonth = today.getMonth() + 1
+  const monthsToDate = (yearlySummary?.months || []).filter((m) => m.month <= currentMonth)
+  const maxIncome = Math.max(1, ...monthsToDate.map((m) => Number(m.totalIncome) || 0))
+  const maxCashFlow = Math.max(1, ...(yearlySummary?.months || []).map((m) => Math.abs(Number(m.netCashFlow)) || 0))
+
+  const summaryCards = [
+    {
+      title: 'Monthly income',
+      value: formatCurrency(monthlySummary?.totalIncome),
+      change: formatChange(monthlySummary?.incomeChangePercent),
+      trend: Number(monthlySummary?.incomeChangePercent) >= 0 ? 'up' : 'down',
+    },
+    {
+      title: 'Monthly expenses',
+      value: formatCurrency(monthlySummary?.totalExpense),
+      change: formatChange(monthlySummary?.expenseChangePercent),
+      trend: Number(monthlySummary?.expenseChangePercent) >= 0 ? 'down' : 'up',
+    },
+    {
+      title: 'Cash flow',
+      value: formatCurrency(monthlySummary?.netCashFlow),
+      change: formatChange(monthlySummary?.cashFlowChangePercent),
+      trend: Number(monthlySummary?.cashFlowChangePercent) >= 0 ? 'up' : 'down',
+    },
+  ]
+
+  const categoryBreakdown = (categorySummary?.categories || []).slice(0, 4).map((item) => ({
+    name: item.categoryName,
+    amount: formatCurrency(item.amount),
+    percent: `${item.percentage}%`,
+  }))
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16">
@@ -46,16 +103,22 @@ function DashboardPage() {
           </h1>
         </div>
         <div className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
-          Week 5 • Insights & summaries
+          {monthLabels[currentMonth - 1]} {today.getFullYear()} • Insights & summaries
         </div>
       </div>
+
+      {error && (
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {error}
+        </div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-3">
         {summaryCards.map((card) => (
           <div key={card.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-500">{card.title}</p>
             <div className="mt-4 flex items-end justify-between">
-              <p className="text-2xl font-semibold text-slate-900">{card.value}</p>
+              <p className="text-2xl font-semibold text-slate-900">{loading ? '—' : card.value}</p>
               <div className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-sm ${card.trend === 'up' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
                 {card.trend === 'up' ? <FaArrowTrendUp /> : <FaArrowTrendDown />}
                 {card.change}
@@ -70,16 +133,16 @@ function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Monthly performance</h2>
-              <p className="mt-1 text-sm text-slate-500">Income vs. expense trend for the current year</p>
+              <p className="mt-1 text-sm text-slate-500">Income trend for the current year</p>
             </div>
-            <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600">Last 6 months</div>
+            <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600">Year to date</div>
           </div>
 
           <div className="mt-6 flex h-48 items-end gap-3">
-            {monthlySeries.map((value, index) => (
-              <div key={`${value}-${index}`} className="flex-1">
-                <div className="rounded-t-2xl bg-gradient-to-t from-emerald-600 to-emerald-400" style={{ height: `${(value / 5000) * 100}%` }} />
-                <p className="mt-2 text-center text-xs text-slate-500">M{index + 1}</p>
+            {monthsToDate.map((item) => (
+              <div key={item.month} className="flex-1">
+                <div className="rounded-t-2xl bg-gradient-to-t from-emerald-600 to-emerald-400" style={{ height: `${(Number(item.totalIncome) / maxIncome) * 100}%` }} />
+                <p className="mt-2 text-center text-xs text-slate-500">{monthLabels[item.month - 1]}</p>
               </div>
             ))}
           </div>
@@ -88,17 +151,15 @@ function DashboardPage() {
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Category breakdown</h2>
           <p className="mt-1 text-sm text-slate-500">Top spending categories this month</p>
-          <div className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_0.7fr]">
-            <div className="space-y-4">
-              {categoryBreakdown.map((item, index) => (
-                <div key={item.name}>
-                  <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-700">{item.name}</span>
-                    <span className="text-slate-500">{item.amount}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-100">
-                    <div className="h-2 rounded-full" style={{ width: item.percent, backgroundColor: categoryColors[index] }} />
-                  </div>
+          <div className="mt-6 space-y-4">
+            {categoryBreakdown.length === 0 && !loading && (
+              <p className="text-sm text-slate-400">No expenses recorded this month yet.</p>
+            )}
+            {categoryBreakdown.map((item) => (
+              <div key={item.name}>
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="font-medium text-slate-700">{item.name}</span>
+                  <span className="text-slate-500">{item.amount}</span>
                 </div>
               ))}
             </div>
@@ -124,12 +185,12 @@ function DashboardPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Yearly summary</h2>
-          <p className="mt-1 text-sm text-slate-500">A simple area-style growth view for the year</p>
+          <p className="mt-1 text-sm text-slate-500">Net cash flow by month for {today.getFullYear()}</p>
           <div className="mt-6 flex h-40 items-end gap-3">
-            {yearlySummary.map((item) => (
-              <div key={item.label} className="flex-1">
-                <div className="rounded-t-2xl bg-gradient-to-t from-slate-700 to-emerald-400" style={{ height: `${(item.value / 1800) * 100}%` }} />
-                <p className="mt-2 text-center text-xs text-slate-500">{item.label}</p>
+            {(yearlySummary?.months || []).map((item) => (
+              <div key={item.month} className="flex-1">
+                <div className="rounded-t-2xl bg-gradient-to-t from-slate-700 to-emerald-400" style={{ height: `${(Math.abs(Number(item.netCashFlow)) / maxCashFlow) * 100}%` }} />
+                <p className="mt-2 text-center text-xs text-slate-500">{monthLabels[item.month - 1]}</p>
               </div>
             ))}
           </div>
