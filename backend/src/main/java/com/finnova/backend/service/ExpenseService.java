@@ -27,10 +27,12 @@ public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final CategoryService categoryService;
+    private final BudgetService budgetService;
 
     @Transactional
     public ExpenseResponse addExpense(ExpenseRequest request) {
         Category category = categoryService.getEntityById(request.getCategoryId());
+        Long userId = currentUserId();
 
         Expense expense = new Expense();
         expense.setUser(currentUserRef());
@@ -39,26 +41,43 @@ public class ExpenseService {
         expense.setExpenseDate(request.getExpenseDate());
         expense.setDescription(request.getDescription());
 
-        return toResponse(expenseRepository.save(expense));
+        Expense saved = expenseRepository.save(expense);
+        budgetService.evaluateBudgetForExpense(userId, category.getId(),
+                saved.getExpenseDate().getYear(), saved.getExpenseDate().getMonthValue());
+        return toResponse(saved);
     }
 
     @Transactional
     public ExpenseResponse updateExpense(Long id, ExpenseRequest request) {
         Expense expense = getOwnedExpense(id);
         Category category = categoryService.getEntityById(request.getCategoryId());
+        Long userId = currentUserId();
+
+        Long oldCategoryId = expense.getCategory().getId();
+        LocalDate oldDate = expense.getExpenseDate();
 
         expense.setCategory(category);
         expense.setAmount(request.getAmount());
         expense.setExpenseDate(request.getExpenseDate());
         expense.setDescription(request.getDescription());
 
-        return toResponse(expenseRepository.save(expense));
+        Expense saved = expenseRepository.save(expense);
+
+        budgetService.evaluateBudgetForExpense(userId, oldCategoryId, oldDate.getYear(), oldDate.getMonthValue());
+        budgetService.evaluateBudgetForExpense(userId, category.getId(),
+                saved.getExpenseDate().getYear(), saved.getExpenseDate().getMonthValue());
+        return toResponse(saved);
     }
 
     @Transactional
     public void deleteExpense(Long id) {
         Expense expense = getOwnedExpense(id);
+        Long userId = currentUserId();
+        Long categoryId = expense.getCategory().getId();
+        LocalDate expenseDate = expense.getExpenseDate();
+
         expenseRepository.delete(expense);
+        budgetService.evaluateBudgetForExpense(userId, categoryId, expenseDate.getYear(), expenseDate.getMonthValue());
     }
 
     @Transactional(readOnly = true)

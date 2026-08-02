@@ -1,9 +1,6 @@
-
-
 package com.finnova.backend.entity;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -17,16 +14,18 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "expense")
+@Table(name = "budget", uniqueConstraints = @UniqueConstraint(
+        columnNames = {"user_id", "category_id", "year", "month"}))
 @Getter
 @Setter
 @NoArgsConstructor
-public class Expense {
+public class Budget {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,11 +42,17 @@ public class Expense {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "expense_date", nullable = false)
-    private LocalDate expenseDate;
+    @Column(nullable = false)
+    private Integer year;
 
-    @Column(length = 255)
-    private String description;
+    @Column(nullable = false)
+    private Integer month;
+
+    @Column(name = "warning_notified", nullable = false)
+    private boolean warningNotified = false;
+
+    @Column(name = "exceeded_notified", nullable = false)
+    private boolean exceededNotified = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
