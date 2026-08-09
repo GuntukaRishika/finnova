@@ -43,6 +43,9 @@ public class Notification {
     @Column(name = "budget_id")
     private Long budgetId;
 
+    @Column(name = "bill_id")
+    private Long billId;
+
     @Column(name = "is_read", nullable = false)
     private boolean read = false;
 

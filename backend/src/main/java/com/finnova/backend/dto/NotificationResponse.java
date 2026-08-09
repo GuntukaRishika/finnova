@@ -15,6 +15,7 @@ public class NotificationResponse {
     private String type;
     private String message;
     private Long budgetId;
+    private Long billId;
     private boolean read;
     private LocalDateTime createdAt;
 }

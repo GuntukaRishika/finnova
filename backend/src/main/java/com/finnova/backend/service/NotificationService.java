@@ -1,9 +1,11 @@
 package com.finnova.backend.service;
 
 import com.finnova.backend.dto.NotificationResponse;
+import com.finnova.backend.entity.Bill;
 import com.finnova.backend.entity.Budget;
 import com.finnova.backend.entity.Notification;
 import com.finnova.backend.entity.NotificationType;
+import com.finnova.backend.entity.User;
 import com.finnova.backend.exception.ResourceNotFoundException;
 import com.finnova.backend.repository.NotificationRepository;
 import com.finnova.backend.security.UserDetailsImpl;
@@ -39,12 +41,31 @@ public class NotificationService {
                         spent.toPlainString(), budget.getAmount().toPlainString()));
     }
 
+    @Transactional
+    public void notifyBillDueSoon(Bill bill) {
+        create(bill.getUser(), NotificationType.BILL_DUE_SOON, null, bill.getId(),
+                String.format("Your bill \"%s\" of %s is due on %s.",
+                        bill.getTitle(), bill.getAmount().toPlainString(), bill.getDueDate()));
+    }
+
+    @Transactional
+    public void notifyBillOverdue(Bill bill) {
+        create(bill.getUser(), NotificationType.BILL_OVERDUE, null, bill.getId(),
+                String.format("Your bill \"%s\" of %s was due on %s and is now overdue.",
+                        bill.getTitle(), bill.getAmount().toPlainString(), bill.getDueDate()));
+    }
+
     private void create(Budget budget, NotificationType type, String message) {
+        create(budget.getUser(), type, budget.getId(), null, message);
+    }
+
+    private void create(User user, NotificationType type, Long budgetId, Long billId, String message) {
         Notification notification = new Notification();
-        notification.setUser(budget.getUser());
+        notification.setUser(user);
         notification.setType(type);
         notification.setMessage(message);
-        notification.setBudgetId(budget.getId());
+        notification.setBudgetId(budgetId);
+        notification.setBillId(billId);
         notificationRepository.save(notification);
     }
 
@@ -85,6 +106,7 @@ public class NotificationService {
                 notification.getType().name(),
                 notification.getMessage(),
                 notification.getBudgetId(),
+                notification.getBillId(),
                 notification.isRead(),
                 notification.getCreatedAt());
     }
