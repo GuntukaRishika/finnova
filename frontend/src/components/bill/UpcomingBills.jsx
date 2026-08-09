@@ -1,10 +1,11 @@
 import { FaCheckCircle } from 'react-icons/fa'
+import { FaPenToSquare, FaTrash } from 'react-icons/fa6'
 
 function formatDate(value) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(value))
 }
 
-function UpcomingBills({ bills, isLoading, onMarkPaid }) {
+function UpcomingBills({ bills, isLoading, onMarkPaid, onEdit, onDelete }) {
   const sortedBills = [...bills].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
 
   return (
@@ -44,15 +45,31 @@ function UpcomingBills({ bills, isLoading, onMarkPaid }) {
                   <p className="font-semibold text-slate-900">${bill.amount}</p>
                 </div>
 
-                {!bill.paid && (
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {!bill.paid && (
+                    <button
+                      type="button"
+                      onClick={() => onMarkPaid(bill.id)}
+                      className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                    >
+                      <FaCheckCircle /> Mark paid
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => onMarkPaid(bill.id)}
-                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                    onClick={() => onEdit(bill)}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
                   >
-                    <FaCheckCircle /> Mark paid
+                    <FaPenToSquare /> Edit
                   </button>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => onDelete(bill.id)}
+                    className="inline-flex items-center gap-2 rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
+                  >
+                    <FaTrash /> Delete
+                  </button>
+                </div>
               </div>
             )
           })

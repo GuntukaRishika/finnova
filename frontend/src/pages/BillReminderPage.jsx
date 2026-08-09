@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FaBell, FaCalendarDays, FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa6'
-import { getBills, markBillPaid } from '../api/billApi'
+import { addBill, deleteBill, getBills, markBillPaid, updateBill } from '../api/billApi'
 import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../api/notificationApi'
 import BillCalendar from '../components/bill/BillCalendar'
+import BillForm from '../components/bill/BillForm'
 import BillNotifications from '../components/bill/BillNotifications'
 import UpcomingBills from '../components/bill/UpcomingBills'
 
@@ -38,6 +39,11 @@ function BillReminderPage() {
   const [isNotificationsLoading, setIsNotificationsLoading] = useState(true)
 
   const [error, setError] = useState('')
+
+  const [editingBill, setEditingBill] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formError, setFormError] = useState('')
+  const formRef = useRef(null)
 
   useEffect(() => {
     let isCancelled = false
@@ -93,6 +99,41 @@ function BillReminderPage() {
     }
   }
 
+  const handleSubmit = async (data) => {
+    setIsSubmitting(true)
+    setFormError('')
+    try {
+      if (editingBill) {
+        await updateBill(editingBill.id, data)
+      } else {
+        await addBill(data)
+      }
+      setEditingBill(null)
+      setRefreshKey((key) => key + 1)
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Could not save this bill reminder.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleEdit = (bill) => {
+    setEditingBill(bill)
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const handleNew = () => {
+    setEditingBill(null)
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this bill reminder?')) return
+    await deleteBill(id)
+    if (editingBill?.id === id) setEditingBill(null)
+    setRefreshKey((key) => key + 1)
+  }
+
   const handleMarkAsRead = async (id) => {
     setNotifications((prev) => prev.map((notification) => (notification.id === id ? { ...notification, read: true } : notification)))
     await markNotificationAsRead(id)
@@ -115,9 +156,23 @@ function BillReminderPage() {
           <h1 className="mt-2 text-3xl font-semibold text-slate-900">Manage your upcoming payments</h1>
           <p className="mt-2 text-slate-600">Schedule bill reminders, track due dates, and keep alerts under control.</p>
         </div>
-        <button className="flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-700">
+        <button
+          type="button"
+          onClick={handleNew}
+          className="flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-700"
+        >
           <FaPlus /> Schedule reminder
         </button>
+      </div>
+
+      <div ref={formRef} className="mb-8">
+        <BillForm
+          editingBill={editingBill}
+          onSubmit={handleSubmit}
+          onCancel={() => setEditingBill(null)}
+          isSubmitting={isSubmitting}
+          error={formError}
+        />
       </div>
 
       <div className="mb-8 grid gap-6 md:grid-cols-3">
@@ -165,7 +220,13 @@ function BillReminderPage() {
             </div>
           </div>
 
-          <UpcomingBills bills={bills} isLoading={isBillsLoading} onMarkPaid={handleMarkPaid} />
+          <UpcomingBills
+            bills={bills}
+            isLoading={isBillsLoading}
+            onMarkPaid={handleMarkPaid}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </div>
 
         <div className="space-y-6">

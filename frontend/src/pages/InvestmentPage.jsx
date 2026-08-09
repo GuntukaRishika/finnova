@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FaChartLine, FaCoins, FaArrowTrendUp } from 'react-icons/fa6'
-import { getInvestments } from '../api/investmentApi'
+import { addInvestment, deleteInvestment, getInvestments, updateInvestment } from '../api/investmentApi'
+import InvestmentForm from '../components/investment/InvestmentForm'
 import InvestmentSummary from '../components/investment/InvestmentSummary'
 import InvestmentTable from '../components/investment/InvestmentTable'
 import AssetAllocationChart from '../components/investment/AssetAllocationChart'
@@ -9,6 +10,12 @@ function InvestmentPage() {
   const [investments, setInvestments] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const [editingInvestment, setEditingInvestment] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formError, setFormError] = useState('')
+  const formRef = useRef(null)
 
   useEffect(() => {
     let isCancelled = false
@@ -29,7 +36,42 @@ function InvestmentPage() {
     return () => {
       isCancelled = true
     }
-  }, [])
+  }, [refreshKey])
+
+  const handleSubmit = async (data) => {
+    setIsSubmitting(true)
+    setFormError('')
+    try {
+      if (editingInvestment) {
+        await updateInvestment(editingInvestment.id, data)
+      } else {
+        await addInvestment(data)
+      }
+      setEditingInvestment(null)
+      setRefreshKey((key) => key + 1)
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Could not save this investment.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleEdit = (investment) => {
+    setEditingInvestment(investment)
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const handleNew = () => {
+    setEditingInvestment(null)
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this investment?')) return
+    await deleteInvestment(id)
+    if (editingInvestment?.id === id) setEditingInvestment(null)
+    setRefreshKey((key) => key + 1)
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16">
@@ -39,7 +81,11 @@ function InvestmentPage() {
           <h1 className="mt-2 text-3xl font-semibold text-slate-900">Track your investments</h1>
           <p className="mt-2 text-slate-600">View portfolio value, asset allocation, and performance at a glance.</p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-700">
+        <button
+          type="button"
+          onClick={handleNew}
+          className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-700"
+        >
           <FaCoins /> Add asset
         </button>
       </div>
@@ -50,10 +96,25 @@ function InvestmentPage() {
         </div>
       )}
 
+      <div ref={formRef} className="mb-8">
+        <InvestmentForm
+          editingInvestment={editingInvestment}
+          onSubmit={handleSubmit}
+          onCancel={() => setEditingInvestment(null)}
+          isSubmitting={isSubmitting}
+          error={formError}
+        />
+      </div>
+
       <InvestmentSummary investments={investments} />
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[0.65fr_0.35fr]">
-        <InvestmentTable investments={investments} isLoading={isLoading} />
+        <InvestmentTable
+          investments={investments}
+          isLoading={isLoading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
         <AssetAllocationChart investments={investments} />
       </div>
 
