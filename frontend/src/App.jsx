@@ -10,6 +10,7 @@ import IncomePage from './pages/IncomePage'
 import ExpensePage from './pages/ExpensePage'
 import BudgetPage from './pages/BudgetPage'
 import BillReminderPage from './pages/BillReminderPage'
+import InvestmentPage from './pages/InvestmentPage'
 import GoalsPage from './pages/GoalsPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -58,6 +59,14 @@ function App() {
           element={
             <ProtectedRoute>
               <BillReminderPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/investments"
+          element={
+            <ProtectedRoute>
+              <InvestmentPage />
             </ProtectedRoute>
           }
         />
