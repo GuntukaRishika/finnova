@@ -24,6 +24,7 @@ function Layout({ children }) {
                 <Link to="/dashboard" className="hover:text-emerald-600">Dashboard</Link>
                 <Link to="/income" className="hover:text-emerald-600">Income</Link>
                 <Link to="/expense" className="hover:text-emerald-600">Expense</Link>
+                <Link to="/scan-bill" className="hover:text-emerald-600">Scan Bill</Link>
                 <Link to="/budget" className="hover:text-emerald-600">Budget</Link>
                 <Link to="/reminders" className="hover:text-emerald-600">Reminders</Link>
                 <Link to="/goals" className="hover:text-emerald-600">Goals</Link>

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { FaCamera } from 'react-icons/fa'
 import { addExpense, deleteExpense, filterExpense, getExpenses, searchExpense, updateExpense } from '../api/expenseApi'
 import { getCategories } from '../api/categoryApi'
 import ExpenseSummary from '../components/expense/ExpenseSummary'
@@ -107,10 +109,18 @@ function ExpensePage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-6 py-16">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-rose-600">Expense</p>
-        <h1 className="mt-2 text-3xl font-semibold text-slate-900">Manage your expenses</h1>
-        <p className="mt-2 text-slate-600">Track spending, review monthly totals, and search past entries.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-rose-600">Expense</p>
+          <h1 className="mt-2 text-3xl font-semibold text-slate-900">Manage your expenses</h1>
+          <p className="mt-2 text-slate-600">Track spending, review monthly totals, and search past entries.</p>
+        </div>
+        <Link
+          to="/scan-bill"
+          className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 font-medium text-rose-700 transition hover:bg-rose-100"
+        >
+          <FaCamera /> Scan a bill
+        </Link>
       </div>
 
       <ExpenseSummary refreshKey={refreshKey} />

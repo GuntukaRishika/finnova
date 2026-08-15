@@ -10,6 +10,7 @@ backend/target/
 *.jar
 !.mvn/wrapper/maven-wrapper.jar
 backend/run.log
+backend/uploads/
 
 # IDE
 .idea/
