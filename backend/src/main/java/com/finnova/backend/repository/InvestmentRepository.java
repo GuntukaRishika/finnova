@@ -17,6 +17,8 @@ public interface InvestmentRepository extends JpaRepository<Investment, Long> {
 
     Page<Investment> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
+    List<Investment> findByUserId(Long userId);
+
     long countByUserId(Long userId);
 
     @Query("SELECT COALESCE(SUM(i.currentValue), 0) FROM Investment i WHERE i.user.id = :userId")

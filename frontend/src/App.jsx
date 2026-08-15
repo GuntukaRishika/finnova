@@ -11,6 +11,7 @@ import ExpensePage from './pages/ExpensePage'
 import BudgetPage from './pages/BudgetPage'
 import BillReminderPage from './pages/BillReminderPage'
 import InvestmentPage from './pages/InvestmentPage'
+import AnalyticsPage from './pages/AnalyticsPage'
 import GoalsPage from './pages/GoalsPage'
 import ScanBillPage from './pages/ScanBillPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -68,6 +69,14 @@ function App() {
           element={
             <ProtectedRoute>
               <InvestmentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
             </ProtectedRoute>
           }
         />

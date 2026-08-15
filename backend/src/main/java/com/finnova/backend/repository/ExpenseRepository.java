@@ -43,4 +43,11 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long>, JpaSpec
                                                                      @Param("categoryId") Long categoryId,
                                                                      @Param("start") LocalDate start,
                                                                      @Param("end") LocalDate end);
+
+    @Query("SELECT e.expenseDate, COALESCE(SUM(e.amount), 0) FROM Expense e " +
+            "WHERE e.user.id = :userId AND e.expenseDate BETWEEN :start AND :end " +
+            "GROUP BY e.expenseDate")
+    List<Object[]> sumAmountGroupByDate(@Param("userId") Long userId,
+                                          @Param("start") LocalDate start,
+                                          @Param("end") LocalDate end);
 }
