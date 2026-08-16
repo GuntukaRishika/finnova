@@ -53,4 +53,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                 .body(new MessageResponse("Uploaded file exceeds the maximum allowed size"));
     }
+
+    @ExceptionHandler(AiProcessingException.class)
+    public ResponseEntity<MessageResponse> handleAiProcessing(AiProcessingException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new MessageResponse(ex.getMessage()));
+    }
 }

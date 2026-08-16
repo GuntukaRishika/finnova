@@ -21,6 +21,17 @@ Finnova/
 - `ROLE_USER` / `ROLE_ADMIN` seeded automatically on startup; new registrations get `ROLE_USER`
 - All non-`/api/auth/**` endpoints require a valid `Authorization: Bearer <token>` header
 
+## AI features (Gemini)
+The AI financial assistant chat, spending analysis (`/api/ai/analyze`), and recommendations (`/api/ai/advice`) are
+powered by Google's Gemini API. Get a free key from https://aistudio.google.com/apikey and set it before starting
+the backend:
+```
+
+_API_KEY=your-key-here
+```
+Without a key, those endpoints return a 503 with a message telling you to set `GEMINI_API_KEY`. Everything else
+works normally. Override the model with `GEMINI_MODEL` (defaults to `gemini-2.0-flash`).
+
 ## Backend setup (Member A)
 Requirements: JDK 21 (an LTS build — **not JDK 26**, whose class files Lombok's annotation processor doesn't support yet), Maven, MySQL (or MariaDB, e.g. via XAMPP) running locally on port 3306.
 
