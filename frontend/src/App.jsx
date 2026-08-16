@@ -14,6 +14,8 @@ import InvestmentPage from './pages/InvestmentPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import GoalsPage from './pages/GoalsPage'
 import ScanBillPage from './pages/ScanBillPage'
+import AIAnalysisPage from './pages/AIAnalysisPage'
+import AIFinancialAdvisorPage from './pages/AIFinancialAdvisorPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -77,6 +79,22 @@ function App() {
           element={
             <ProtectedRoute>
               <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-analysis"
+          element={
+            <ProtectedRoute>
+              <AIAnalysisPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-advisor"
+          element={
+            <ProtectedRoute>
+              <AIFinancialAdvisorPage />
             </ProtectedRoute>
           }
         />
