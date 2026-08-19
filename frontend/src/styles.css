@@ -16,3 +16,16 @@ body {
 #root {
   min-height: 100vh;
 }
+
+@keyframes goal-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.goal-reveal {
+  animation: goal-reveal 420ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-reveal { animation: none; }
+}

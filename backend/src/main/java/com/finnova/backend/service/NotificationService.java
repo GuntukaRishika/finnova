@@ -1,5 +1,14 @@
 package com.finnova.backend.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.finnova.backend.dto.NotificationResponse;
 import com.finnova.backend.entity.Bill;
 import com.finnova.backend.entity.Budget;
@@ -9,15 +18,8 @@ import com.finnova.backend.entity.User;
 import com.finnova.backend.exception.ResourceNotFoundException;
 import com.finnova.backend.repository.NotificationRepository;
 import com.finnova.backend.security.UserDetailsImpl;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -75,6 +77,13 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
+    public Page<NotificationResponse> getBudgetNotifications(Pageable pageable) {
+        return notificationRepository.findByUserIdAndTypeInOrderByCreatedAtDesc(
+                currentUserId(), List.of(NotificationType.BUDGET_WARNING, NotificationType.BUDGET_EXCEEDED), pageable)
+                .map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
     public long getUnreadCount() {
         return notificationRepository.countByUserIdAndReadFalse(currentUserId());
     }
@@ -92,6 +101,20 @@ public class NotificationService {
         List<Notification> unread = notificationRepository.findByUserIdAndReadFalse(currentUserId());
         unread.forEach(n -> n.setRead(true));
         notificationRepository.saveAll(unread);
+    }
+
+    @Transactional
+    public void markAllBudgetNotificationsAsRead() {
+        List<Notification> unread = notificationRepository.findByUserIdAndTypeInAndReadFalse(
+                currentUserId(), List.of(NotificationType.BUDGET_WARNING, NotificationType.BUDGET_EXCEEDED));
+        unread.forEach(n -> n.setRead(true));
+        notificationRepository.saveAll(unread);
+    }
+
+    @Transactional
+    public void deleteAllBudgetNotifications() {
+        notificationRepository.deleteByUserIdAndTypeIn(
+                currentUserId(), List.of(NotificationType.BUDGET_WARNING, NotificationType.BUDGET_EXCEEDED));
     }
 
     private Long currentUserId() {
