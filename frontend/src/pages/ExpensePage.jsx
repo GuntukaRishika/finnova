@@ -8,6 +8,7 @@ import ExpenseForm from '../components/expense/ExpenseForm'
 import ExpenseFilters from '../components/expense/ExpenseFilters'
 import ExpenseTable from '../components/expense/ExpenseTable'
 import ExpenseCards from '../components/expense/ExpenseCards'
+import VoiceExpenseEntry from '../components/expense/VoiceExpenseEntry'
 
 const PAGE_SIZE = 10
 
@@ -131,6 +132,8 @@ function ExpensePage() {
       </div>
 
       <ExpenseSummary refreshKey={refreshKey} />
+
+      <VoiceExpenseEntry categories={categories} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
 
       <div ref={formRef}>
         <ExpenseForm

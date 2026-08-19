@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import axiosClient from '../../api/axiosClient'
 
-const HISTORY_KEY = 'advisor_chat_history_v1'
+const EMPTY_MESSAGES = [{ from: 'system', text: 'Ask the financial assistant.' }]
 
 export default function AdvisorChat() {
-const [messages, setMessages] = useState(() => {
-    try {
-    const raw = localStorage.getItem(HISTORY_KEY)
-    return raw ? JSON.parse(raw) : [{ from: 'system', text: 'Ask the financial assistant.' }]
-    } catch (e) {
-    return [{ from: 'system', text: 'Ask the financial assistant.' }]
-    }
-})
+const [messages, setMessages] = useState(EMPTY_MESSAGES)
 const [input, setInput] = useState('')
 const [loading, setLoading] = useState(false)
 
 useEffect(() => {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(messages))
-}, [messages])
+    axiosClient.get('/ai/assistant/history')
+        .then((res) => {
+            const history = (res.data || []).flatMap((item) => [
+                { from: 'user', text: item.question, time: item.createdAt },
+                { from: 'ai', text: item.answer, time: item.createdAt },
+            ])
+            setMessages(history.length ? history : EMPTY_MESSAGES)
+        })
+        .catch(() => setMessages(EMPTY_MESSAGES))
+}, [])
 
 const send = async () => {
     if (!input.trim()) return
@@ -28,7 +29,10 @@ const send = async () => {
     try {
         const res = await axiosClient.post('/ai/assistant', { message: input })
         const reply = res.data?.reply || 'No response.'
-        setMessages((m) => [...m, { from: 'ai', text: reply, time: new Date().toISOString() }])
+        const decision = res.data?.decision && res.data.decision !== 'NONE'
+            ? `\n\nDecision: ${res.data.decision === 'BUY_NOW' ? 'Buy now' : 'Wait'}${res.data.decisionReason ? ` - ${res.data.decisionReason}` : ''}`
+            : ''
+        setMessages((m) => [...m, { from: 'ai', text: `${reply}${decision}`, time: new Date().toISOString() }])
     } catch (e) {
         setMessages((m) => [...m, { from: 'ai', text: 'Error: ' + (e.message || 'unknown') }])
     } finally {
@@ -36,9 +40,9 @@ const send = async () => {
     }
 }
 
-const clearHistory = () => {
-    setMessages([{ from: 'system', text: 'Ask the financial assistant.' }])
-    localStorage.removeItem(HISTORY_KEY)
+const clearHistory = async () => {
+    await axiosClient.delete('/ai/assistant/history')
+    setMessages(EMPTY_MESSAGES)
 }
 
 return (

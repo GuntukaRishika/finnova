@@ -10,4 +10,11 @@ import lombok.Setter;
 public class AiChatResponse {
 
     private String reply;
+    private String decision;
+    private String decisionReason;
+
+    public AiChatResponse(String reply) {
+        this(reply, "NONE", null);
+    }
+
 }

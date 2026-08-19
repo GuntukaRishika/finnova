@@ -3,13 +3,19 @@ package com.finnova.backend.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finnova.backend.dto.AiInsight;
+import com.finnova.backend.dto.AiChatResponse;
 import com.finnova.backend.dto.AiRecommendation;
+import com.finnova.backend.dto.AdvisorDecisionResponse;
+import com.finnova.backend.dto.AdvisorHistoryItem;
 import com.finnova.backend.dto.FinancialAnalysisResponse;
 import com.finnova.backend.entity.Budget;
+import com.finnova.backend.entity.AdvisorQuestion;
 import com.finnova.backend.exception.AiProcessingException;
 import com.finnova.backend.repository.BudgetRepository;
+import com.finnova.backend.repository.AdvisorQuestionRepository;
 import com.finnova.backend.repository.ExpenseRepository;
 import com.finnova.backend.repository.IncomeRepository;
+import com.finnova.backend.repository.UserRepository;
 import com.finnova.backend.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -69,14 +75,58 @@ public class AiService {
     private final ExpenseRepository expenseRepository;
     private final IncomeRepository incomeRepository;
     private final BudgetRepository budgetRepository;
+    private final AdvisorQuestionRepository advisorQuestionRepository;
+    private final UserRepository userRepository;
     private final GeminiClient geminiClient;
     private final RecommendationEngine recommendationEngine;
     private final ObjectMapper objectMapper;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public String chat(String message) {
         String context = buildFinancialContext();
-        return geminiClient.generateText(CHAT_SYSTEM_PROMPT.formatted(context), message);
+        String answer = geminiClient.generateText(CHAT_SYSTEM_PROMPT.formatted(context), message);
+        AdvisorQuestion question = new AdvisorQuestion();
+        question.setUser(currentUser());
+        question.setQuestion(message);
+        question.setAnswer(answer);
+        advisorQuestionRepository.save(question);
+        return answer;
+    }
+
+    @Transactional
+    public AiChatResponse chatResponse(String message) {
+        String answer = chat(message);
+        AdvisorDecisionResponse decision = evaluateDecision(message);
+        return new AiChatResponse(answer, decision.getDecision(), decision.getReason());
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdvisorHistoryItem> getChatHistory() {
+        return advisorQuestionRepository.findByUserIdOrderByCreatedAtAsc(currentUserId()).stream()
+                .map(item -> new AdvisorHistoryItem(item.getId(), item.getQuestion(), item.getAnswer(), item.getCreatedAt()))
+                .toList();
+    }
+
+    @Transactional
+    public void clearChatHistory() {
+        advisorQuestionRepository.deleteByUserId(currentUserId());
+    }
+
+    @Transactional(readOnly = true)
+    public AdvisorDecisionResponse evaluateDecision(String question) {
+        String normalized = question.toLowerCase();
+        boolean purchaseQuestion = normalized.contains("buy") || normalized.contains("purchase")
+                || normalized.contains("afford") || normalized.contains("spend");
+        if (!purchaseQuestion) {
+            return new AdvisorDecisionResponse("NONE", "Ask whether you should buy or wait for a purchase decision.");
+        }
+
+        List<AiRecommendation> recommendations = recommendationEngine.generateRecommendations();
+        boolean urgentIssue = recommendations.stream().anyMatch(item -> "HIGH".equals(item.getPriority()));
+        if (urgentIssue) {
+            return new AdvisorDecisionResponse("WAIT", "Your current budget, savings, or goal warnings suggest postponing non-essential spending.");
+        }
+        return new AdvisorDecisionResponse("BUY_NOW", "No high-priority budget, savings, or goal warning is currently active. Confirm the purchase still fits your available cash.");
     }
 
     @Transactional(readOnly = true)
@@ -226,8 +276,13 @@ public class AiService {
     }
 
     private Long currentUserId() {
+        return currentUser().getId();
+    }
+
+    private com.finnova.backend.entity.User currentUser() {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
-        return principal.getId();
+        return userRepository.findById(principal.getId())
+            .orElseThrow(() -> new IllegalStateException("Authenticated user no longer exists"));
     }
 }
