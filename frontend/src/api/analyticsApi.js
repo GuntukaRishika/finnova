@@ -4,6 +4,10 @@ export function getMonthlyGrowth({ year, month, months = 6 } = {}) {
   return axiosClient.get('/analytics/monthly-growth', { params: { year, month, months } }).then((res) => res.data)
 }
 
+export function getPredictions({ year, month, historyMonths = 6, forecastMonths = 3 } = {}) {
+  return axiosClient.get('/analytics/predictions', { params: { year, month, historyMonths, forecastMonths } }).then((res) => res.data)
+}
+
 export function getCategoryReport({ year, month, months = 6, type = 'EXPENSE' } = {}) {
   return axiosClient.get('/analytics/category-report', { params: { year, month, months, type } }).then((res) => res.data)
 }
