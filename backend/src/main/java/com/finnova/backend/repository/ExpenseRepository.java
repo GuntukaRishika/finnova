@@ -17,6 +17,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long>, JpaSpec
 
     Optional<Expense> findByIdAndUserId(Long id, Long userId);
 
+        List<Expense> findByUserIdOrderByExpenseDateDescCreatedAtDesc(Long userId, Pageable pageable);
+
     Page<Expense> findByUserIdAndExpenseDateBetween(Long userId, LocalDate start, LocalDate end, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e " +

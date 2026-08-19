@@ -7,6 +7,7 @@ import ExpenseSummary from '../components/expense/ExpenseSummary'
 import ExpenseForm from '../components/expense/ExpenseForm'
 import ExpenseFilters from '../components/expense/ExpenseFilters'
 import ExpenseTable from '../components/expense/ExpenseTable'
+import ExpenseCards from '../components/expense/ExpenseCards'
 
 const PAGE_SIZE = 10
 
@@ -17,6 +18,7 @@ function ExpensePage() {
   const [mode, setMode] = useState('all')
   const [keyword, setKeyword] = useState('')
   const [filters, setFilters] = useState(null)
+  const [sort, setSort] = useState('expenseDate,desc')
 
   const [isTableLoading, setIsTableLoading] = useState(true)
   const [editingExpense, setEditingExpense] = useState(null)
@@ -36,10 +38,10 @@ function ExpensePage() {
 
     const request =
       mode === 'search'
-        ? searchExpense(keyword, { page: pageNumber, size: PAGE_SIZE })
+        ? searchExpense(keyword, { page: pageNumber, size: PAGE_SIZE, sort })
         : mode === 'filter'
-        ? filterExpense(filters, { page: pageNumber, size: PAGE_SIZE })
-        : getExpenses({ page: pageNumber, size: PAGE_SIZE })
+        ? filterExpense(filters, { page: pageNumber, size: PAGE_SIZE, sort })
+        : getExpenses({ page: pageNumber, size: PAGE_SIZE, sort })
 
     request
       .then((data) => {
@@ -52,7 +54,7 @@ function ExpensePage() {
     return () => {
       isCancelled = true
     }
-  }, [mode, keyword, filters, pageNumber, refreshKey])
+  }, [mode, keyword, filters, pageNumber, refreshKey, sort])
 
   const handleSearch = (value) => {
     setPageNumber(0)
@@ -76,6 +78,11 @@ function ExpensePage() {
     setMode('all')
     setKeyword('')
     setFilters(null)
+  }
+
+  const handleSortChange = (value) => {
+    setPageNumber(0)
+    setSort(value)
   }
 
   const handleSubmit = async (data) => {
@@ -136,15 +143,12 @@ function ExpensePage() {
         />
       </div>
 
-      <ExpenseFilters categories={categories} onSearch={handleSearch} onFilter={handleFilter} onClear={handleClear} />
+      <ExpenseFilters categories={categories} sort={sort} onSortChange={handleSortChange} onSearch={handleSearch} onFilter={handleFilter} onClear={handleClear} />
 
-      <ExpenseTable
-        page={pageData}
-        isLoading={isTableLoading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onPageChange={setPageNumber}
-      />
+      <div className="hidden md:block">
+        <ExpenseTable page={pageData} isLoading={isTableLoading} onEdit={handleEdit} onDelete={handleDelete} onPageChange={setPageNumber} />
+      </div>
+      <ExpenseCards page={pageData} isLoading={isTableLoading} onEdit={handleEdit} onDelete={handleDelete} onPageChange={setPageNumber} />
     </div>
   )
 }

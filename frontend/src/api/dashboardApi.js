@@ -15,3 +15,7 @@ export function getCategorySummary(year, month, type = 'EXPENSE') {
 export function getCashFlow(year, month) {
   return axiosClient.get('/dashboard/cash-flow', { params: { year, month } }).then((res) => res.data)
 }
+
+export function getRecentTransactions(limit = 5) {
+  return axiosClient.get('/dashboard/recent-transactions', { params: { limit } }).then((res) => res.data)
+}

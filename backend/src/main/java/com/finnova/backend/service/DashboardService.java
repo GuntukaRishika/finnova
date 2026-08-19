@@ -5,11 +5,14 @@ import com.finnova.backend.dto.CategoryAmount;
 import com.finnova.backend.dto.CategorySummaryResponse;
 import com.finnova.backend.dto.MonthlyPoint;
 import com.finnova.backend.dto.MonthlySummaryResponse;
+import com.finnova.backend.dto.RecentTransactionResponse;
 import com.finnova.backend.dto.YearlySummaryResponse;
 import com.finnova.backend.repository.ExpenseRepository;
 import com.finnova.backend.repository.IncomeRepository;
 import com.finnova.backend.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -124,6 +128,42 @@ public class DashboardService {
                 topExpenseCategory,
                 topExpenseCategoryAmount);
     }
+
+            @Transactional(readOnly = true)
+            public List<RecentTransactionResponse> getRecentTransactions(int limit) {
+            Long userId = currentUserId();
+            int resultLimit = Math.max(1, Math.min(limit, 20));
+            Pageable pageable = PageRequest.of(0, resultLimit);
+
+            List<RecentTransactionResponse> transactions = new ArrayList<>();
+            expenseRepository.findByUserIdOrderByExpenseDateDescCreatedAtDesc(userId, pageable)
+                .stream()
+                .map(expense -> new RecentTransactionResponse(
+                    expense.getId(),
+                    transactionTitle(expense.getDescription(), expense.getCategory().getName()),
+                    "EXPENSE",
+                    expense.getAmount(),
+                    expense.getExpenseDate()))
+                .forEach(transactions::add);
+            incomeRepository.findByUserIdOrderByIncomeDateDescCreatedAtDesc(userId, pageable)
+                .stream()
+                .map(income -> new RecentTransactionResponse(
+                    income.getId(),
+                    transactionTitle(income.getDescription(), income.getCategory().getName()),
+                    "INCOME",
+                    income.getAmount(),
+                    income.getIncomeDate()))
+                .forEach(transactions::add);
+
+            return transactions.stream()
+                .sorted(Comparator.comparing(RecentTransactionResponse::getDate).reversed())
+                .limit(resultLimit)
+                .toList();
+            }
+
+            private String transactionTitle(String description, String categoryName) {
+            return description == null || description.isBlank() ? categoryName : description;
+            }
 
     private BigDecimal incomeSum(Long userId, YearMonth yearMonth) {
         return incomeRepository.sumAmountByUserIdAndIncomeDateBetween(
