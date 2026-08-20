@@ -32,8 +32,8 @@ function findCategory(text, categories) {
 
 export function parseVoiceExpense(transcript, categories = []) {
   const text = transcript.trim().replace(/[.?!]+$/, '')
-  const numericMatch = text.match(/(?:[$€£]\s*)?(\d+(?:\.\d{1,2})?)/)
-  const amount = numericMatch ? Number(numericMatch[1]) : amountFromWords(text)
+  const numericMatch = text.match(/(?:[$€£]\s*)?(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)/)
+  const amount = numericMatch ? Number(numericMatch[1].replace(/,/g, '')) : amountFromWords(text)
   const categoryId = findCategory(text, categories)
   const matchedCategory = categories.find((category) => category.id === categoryId)
   const description = text
