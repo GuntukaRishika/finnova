@@ -67,8 +67,9 @@ function GoalList({ goals, isLoading, onEdit, onDelete, onContribute }) {
         {!isLoading &&
           goals.map((goal) => {
             const completed = goal.status === 'COMPLETED'
+            const progress = Math.min(100, Math.max(0, Number(goal.percentComplete) || 0))
             return (
-              <div key={goal.id} className="rounded-2xl border border-slate-100 p-4">
+              <div key={goal.id} className="goal-reveal rounded-2xl border border-slate-100 p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-slate-800">{goal.name}</span>
@@ -98,25 +99,45 @@ function GoalList({ goals, isLoading, onEdit, onDelete, onContribute }) {
                   </div>
                 </div>
 
-                <div className="mb-1 flex items-center justify-between text-sm">
-                  <span className="text-slate-500">
-                    {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
-                  </span>
-                  <span className="text-slate-500">{formatDate(goal.targetDate)}</span>
-                </div>
-                <div className="h-3 rounded-full bg-slate-100">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <div
-                    className={`h-3 rounded-full ${completed ? 'bg-emerald-500' : 'bg-sky-500'}`}
-                    style={{ width: `${goal.percentComplete}%` }}
-                  />
+                    className="relative h-24 w-24 flex-shrink-0 rounded-full"
+                    style={{ background: `conic-gradient(${completed ? '#10b981' : '#0ea5e9'} ${progress}%, #e2e8f0 ${progress}% 100%)` }}
+                    aria-label={`${progress}% funded`}
+                  >
+                    <div className="absolute inset-2 flex items-center justify-center rounded-full bg-white">
+                      <span className="text-lg font-semibold text-slate-800">{progress}%</span>
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className="text-slate-500">{formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}</span>
+                      <span className="text-slate-500">{formatDate(goal.targetDate)}</span>
+                    </div>
+                    <div className="h-3 rounded-full bg-slate-100">
+                      <div className={`h-3 rounded-full ${completed ? 'bg-emerald-500' : 'bg-sky-500'}`} style={{ width: `${progress}%` }} />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-3 flex items-center justify-between">
                   <p className="text-sm text-slate-500">
-                    {goal.percentComplete}% funded
+                    {progress}% funded
                     {!completed && ` · ${formatCurrency(goal.remainingAmount)} to go`}
                   </p>
                   {!completed && <ContributeControl goal={goal} onContribute={onContribute} />}
+                </div>
+
+                <div className="mt-5 grid grid-cols-[auto_1fr_auto] items-start gap-3 text-xs text-slate-500">
+                  <span className="h-3 w-3 rounded-full bg-slate-300" aria-hidden="true" />
+                  <span>Goal started</span>
+                  <span>{formatDate(goal.createdAt)}</span>
+                  <span className={`h-3 w-3 rounded-full ${progress > 0 ? 'bg-sky-500' : 'bg-slate-200'}`} aria-hidden="true" />
+                  <span>Current progress</span>
+                  <span>{formatCurrency(goal.currentAmount)}</span>
+                  <span className={`h-3 w-3 rounded-full ${completed ? 'bg-emerald-500' : 'bg-slate-200'}`} aria-hidden="true" />
+                  <span>{completed ? 'Completed' : 'Target date'}</span>
+                  <span>{formatDate(goal.targetDate)}</span>
                 </div>
               </div>
             )

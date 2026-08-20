@@ -17,6 +17,8 @@ public interface IncomeRepository extends JpaRepository<Income, Long>, JpaSpecif
 
     Optional<Income> findByIdAndUserId(Long id, Long userId);
 
+        List<Income> findByUserIdOrderByIncomeDateDescCreatedAtDesc(Long userId, Pageable pageable);
+
     Page<Income> findByUserIdAndIncomeDateBetween(Long userId, LocalDate start, LocalDate end, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(i.amount), 0) FROM Income i " +

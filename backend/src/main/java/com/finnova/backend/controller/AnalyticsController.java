@@ -4,6 +4,7 @@ import com.finnova.backend.dto.CategoryReportResponse;
 import com.finnova.backend.dto.GrowthPoint;
 import com.finnova.backend.dto.PeriodComparisonResponse;
 import com.finnova.backend.dto.PortfolioAnalysisResponse;
+import com.finnova.backend.dto.PredictionResponse;
 import com.finnova.backend.dto.SpendingHeatmapResponse;
 import com.finnova.backend.service.AnalyticsService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,18 @@ public class AnalyticsController {
         int resolvedYear = year != null ? year : anchor.getYear();
         int resolvedMonth = month != null ? month : anchor.getMonthValue();
         return ResponseEntity.ok(analyticsService.getMonthlyGrowth(resolvedYear, resolvedMonth, months));
+    }
+
+    @GetMapping("/predictions")
+    public ResponseEntity<PredictionResponse> getPredictions(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(defaultValue = "6") int historyMonths,
+            @RequestParam(defaultValue = "3") int forecastMonths) {
+        LocalDate anchor = LocalDate.now();
+        int resolvedYear = year != null ? year : anchor.getYear();
+        int resolvedMonth = month != null ? month : anchor.getMonthValue();
+        return ResponseEntity.ok(analyticsService.getPredictions(resolvedYear, resolvedMonth, historyMonths, forecastMonths));
     }
 
     @GetMapping("/category-report")

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getMonthlyGrowth, getCategoryReport, getPortfolioAnalysis, getSpendingHeatmap, getComparison } from '../api/analyticsApi'
+import { getMonthlyGrowth, getPredictions, getCategoryReport, getPortfolioAnalysis, getSpendingHeatmap, getComparison } from '../api/analyticsApi'
 import GrowthChart from '../components/analytics/GrowthChart'
 import CategoryReportPanel from '../components/analytics/CategoryReportPanel'
 import PortfolioAnalysisPanel from '../components/analytics/PortfolioAnalysisPanel'
 import SpendingHeatmap from '../components/analytics/SpendingHeatmap'
 import ComparisonPanel from '../components/analytics/ComparisonPanel'
+import PredictionPanel from '../components/analytics/PredictionPanel'
 import { monthLabel } from '../utils/analyticsFormat'
 
 function toMonthInputValue(year, month) {
@@ -27,6 +28,8 @@ function AnalyticsPage() {
   const [growthMonths, setGrowthMonths] = useState(6)
   const [categoryType, setCategoryType] = useState('EXPENSE')
   const [categoryMonths, setCategoryMonths] = useState(6)
+  const [predictionHistoryMonths, setPredictionHistoryMonths] = useState(6)
+  const [predictionForecastMonths, setPredictionForecastMonths] = useState(3)
 
   const defaultPeriodA = useMemo(() => shiftMonth(anchor.year, anchor.month, -1), [anchor])
   const [periodA, setPeriodA] = useState(defaultPeriodA)
@@ -37,12 +40,14 @@ function AnalyticsPage() {
   const [portfolioData, setPortfolioData] = useState(null)
   const [heatmapData, setHeatmapData] = useState(null)
   const [comparisonData, setComparisonData] = useState(null)
+  const [predictionData, setPredictionData] = useState(null)
 
   const [loadingGrowth, setLoadingGrowth] = useState(true)
   const [loadingCategory, setLoadingCategory] = useState(true)
   const [loadingPortfolio, setLoadingPortfolio] = useState(true)
   const [loadingHeatmap, setLoadingHeatmap] = useState(true)
   const [loadingComparison, setLoadingComparison] = useState(true)
+  const [loadingPrediction, setLoadingPrediction] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -57,6 +62,14 @@ function AnalyticsPage() {
       .catch(() => setError('Unable to load monthly growth data.'))
       .finally(() => setLoadingGrowth(false))
   }, [anchor, growthMonths])
+
+  useEffect(() => {
+    setLoadingPrediction(true)
+    getPredictions({ year: anchor.year, month: anchor.month, historyMonths: predictionHistoryMonths, forecastMonths: predictionForecastMonths })
+      .then(setPredictionData)
+      .catch(() => setError('Unable to load prediction data.'))
+      .finally(() => setLoadingPrediction(false))
+  }, [anchor, predictionHistoryMonths, predictionForecastMonths])
 
   useEffect(() => {
     setLoadingCategory(true)
@@ -128,6 +141,15 @@ function AnalyticsPage() {
           </div>
           <GrowthChart data={growthData} loading={loadingGrowth} />
         </div>
+
+        <PredictionPanel
+          data={predictionData}
+          loading={loadingPrediction}
+          historyMonths={predictionHistoryMonths}
+          forecastMonths={predictionForecastMonths}
+          onHistoryChange={setPredictionHistoryMonths}
+          onForecastChange={setPredictionForecastMonths}
+        />
 
         <div className="grid gap-8 lg:grid-cols-2">
           <SpendingHeatmap data={heatmapData} year={anchor.year} month={anchor.month} loading={loadingHeatmap} />

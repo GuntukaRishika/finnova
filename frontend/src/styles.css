@@ -16,3 +16,30 @@ body {
 #root {
   min-height: 100vh;
 }
+
+@keyframes goal-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.goal-reveal {
+  animation: goal-reveal 420ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-reveal { animation: none; }
+}
+
+@keyframes voice-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(14, 165, 233, 0); }
+}
+
+.voice-mic { transition: transform 180ms ease, background-color 180ms ease; }
+.voice-mic:active { transform: scale(0.97); }
+.voice-pulse { animation: voice-pulse 1.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-mic { transition: none; }
+  .voice-pulse { animation: none; }
+}

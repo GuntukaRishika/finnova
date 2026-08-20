@@ -9,7 +9,7 @@ const EMPTY_FILTERS = {
   maxAmount: '',
 }
 
-function ExpenseFilters({ categories, onSearch, onFilter, onClear }) {
+function ExpenseFilters({ categories, sort, onSortChange, onSearch, onFilter, onClear }) {
   const [keyword, setKeyword] = useState('')
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [showFilters, setShowFilters] = useState(false)
@@ -57,7 +57,16 @@ function ExpenseFilters({ categories, onSearch, onFilter, onClear }) {
           />
         </form>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+            <span className="sr-only">Sort expenses</span>
+            <select value={sort} onChange={(event) => onSortChange(event.target.value)} className="bg-transparent outline-none">
+              <option value="expenseDate,desc">Newest first</option>
+              <option value="expenseDate,asc">Oldest first</option>
+              <option value="amount,desc">Highest amount</option>
+              <option value="amount,asc">Lowest amount</option>
+            </select>
+          </label>
           <button
             type="button"
             onClick={() => setShowFilters((prev) => !prev)}

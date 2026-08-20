@@ -1,19 +1,26 @@
 package com.finnova.backend.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.finnova.backend.dto.AdvisorDecisionResponse;
+import com.finnova.backend.dto.AdvisorHistoryItem;
 import com.finnova.backend.dto.AiAdviceResponse;
 import com.finnova.backend.dto.AiAnalysisResponse;
 import com.finnova.backend.dto.AiChatRequest;
 import com.finnova.backend.dto.AiChatResponse;
 import com.finnova.backend.dto.FinancialAnalysisResponse;
 import com.finnova.backend.service.AiService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -29,7 +36,23 @@ public class AiController {
 
     @PostMapping("/assistant")
     public ResponseEntity<AiChatResponse> assistant(@Valid @RequestBody AiChatRequest request) {
-        return ResponseEntity.ok(new AiChatResponse(aiService.chat(request.getMessage())));
+        return ResponseEntity.ok(aiService.chatResponse(request.getMessage()));
+    }
+
+    @GetMapping("/assistant/history")
+    public ResponseEntity<List<AdvisorHistoryItem>> assistantHistory() {
+        return ResponseEntity.ok(aiService.getChatHistory());
+    }
+
+    @DeleteMapping("/assistant/history")
+    public ResponseEntity<Void> clearAssistantHistory() {
+        aiService.clearChatHistory();
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/assistant/decision")
+    public ResponseEntity<AdvisorDecisionResponse> assistantDecision(@Valid @RequestBody AiChatRequest request) {
+        return ResponseEntity.ok(aiService.evaluateDecision(request.getMessage()));
     }
 
     @PostMapping("/analyze")

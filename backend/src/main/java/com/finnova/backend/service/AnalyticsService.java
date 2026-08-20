@@ -11,6 +11,8 @@ import com.finnova.backend.dto.PeriodComparisonResponse;
 import com.finnova.backend.dto.PortfolioAllocationResponse;
 import com.finnova.backend.dto.PortfolioAnalysisResponse;
 import com.finnova.backend.dto.PortfolioSummaryResponse;
+import com.finnova.backend.dto.PredictionPoint;
+import com.finnova.backend.dto.PredictionResponse;
 import com.finnova.backend.dto.SpendingHeatmapResponse;
 import com.finnova.backend.entity.Investment;
 import com.finnova.backend.repository.ExpenseRepository;
@@ -43,6 +45,41 @@ public class AnalyticsService {
     private final IncomeRepository incomeRepository;
     private final InvestmentRepository investmentRepository;
     private final PortfolioService portfolioService;
+
+    @Transactional(readOnly = true)
+    public PredictionResponse getPredictions(int year, int month, int historyMonths, int forecastMonths) {
+        Long userId = currentUserId();
+        int historySize = Math.max(1, Math.min(historyMonths, 24));
+        int forecastSize = Math.max(1, Math.min(forecastMonths, 12));
+        YearMonth anchor = YearMonth.of(year, month);
+        YearMonth start = anchor.minusMonths(historySize - 1L);
+        List<PredictionPoint> points = new ArrayList<>();
+        List<BigDecimal> incomes = new ArrayList<>();
+        List<BigDecimal> expenses = new ArrayList<>();
+
+        for (YearMonth cursor = start; !cursor.isAfter(anchor); cursor = cursor.plusMonths(1)) {
+            BigDecimal income = incomeSum(userId, cursor);
+            BigDecimal expense = expenseSum(userId, cursor);
+            incomes.add(income);
+            expenses.add(expense);
+            points.add(new PredictionPoint(cursor.getYear(), cursor.getMonthValue(), income, expense,
+                    income.subtract(expense), false));
+        }
+
+        BigDecimal averageIncome = average(incomes);
+        BigDecimal averageExpense = average(expenses);
+        for (int offset = 1; offset <= forecastSize; offset++) {
+            YearMonth cursor = anchor.plusMonths(offset);
+            BigDecimal predictedIncome = averageIncome;
+            BigDecimal predictedExpense = averageExpense;
+            points.add(new PredictionPoint(cursor.getYear(), cursor.getMonthValue(), predictedIncome, predictedExpense,
+                    predictedIncome.subtract(predictedExpense), true));
+        }
+
+        BigDecimal averageSavings = averageIncome.subtract(averageExpense);
+        return new PredictionResponse(historySize, forecastSize, points, averageIncome, averageExpense, averageSavings,
+                trend(incomes), trend(expenses), trend(points.subList(0, historySize).stream().map(PredictionPoint::getSavings).toList()));
+    }
 
     @Transactional(readOnly = true)
     public List<GrowthPoint> getMonthlyGrowth(int year, int month, int months) {
@@ -240,6 +277,29 @@ public class AnalyticsService {
     private BigDecimal incomeSum(Long userId, YearMonth yearMonth) {
         return incomeRepository.sumAmountByUserIdAndIncomeDateBetween(
                 userId, yearMonth.atDay(1), yearMonth.atEndOfMonth());
+    }
+
+    private BigDecimal average(List<BigDecimal> values) {
+        if (values.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return values.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(values.size()), SCALE, RoundingMode.HALF_UP);
+    }
+
+    private String trend(List<BigDecimal> values) {
+        if (values.size() < 2) {
+            return "STABLE";
+        }
+        BigDecimal first = values.get(0);
+        BigDecimal last = values.get(values.size() - 1);
+        if (last.compareTo(first) > 0) {
+            return "UP";
+        }
+        if (last.compareTo(first) < 0) {
+            return "DOWN";
+        }
+        return "STABLE";
     }
 
     private BigDecimal expenseSum(Long userId, YearMonth yearMonth) {

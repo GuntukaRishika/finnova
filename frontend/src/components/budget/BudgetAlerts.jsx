@@ -1,4 +1,4 @@
-import { FaExclamationTriangle, FaCheckDouble } from 'react-icons/fa'
+import { FaExclamationTriangle, FaCheckDouble, FaTrash } from 'react-icons/fa'
 
 function timeAgo(value) {
   if (!value) return ''
@@ -12,7 +12,7 @@ function timeAgo(value) {
   return `${days}d ago`
 }
 
-function BudgetAlerts({ notifications, isLoading, onMarkAsRead, onMarkAllAsRead }) {
+function BudgetAlerts({ notifications, isLoading, onMarkAsRead, onMarkAllAsRead, onClear }) {
   const unreadCount = notifications.filter((n) => !n.read).length
 
   return (
@@ -22,15 +22,26 @@ function BudgetAlerts({ notifications, isLoading, onMarkAsRead, onMarkAllAsRead 
           <FaExclamationTriangle />
           <h2 className="text-lg font-semibold text-slate-900">Budget alerts</h2>
         </div>
-        {unreadCount > 0 && (
-          <button
-            type="button"
-            onClick={onMarkAllAsRead}
-            className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-emerald-600"
-          >
-            <FaCheckDouble /> Mark all read
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {unreadCount > 0 && (
+            <button
+              type="button"
+              onClick={onMarkAllAsRead}
+              className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-emerald-600"
+            >
+              <FaCheckDouble /> Mark all read
+            </button>
+          )}
+          {notifications.length > 0 && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-red-600"
+            >
+              <FaTrash /> Clear
+            </button>
+          )}
+        </div>
       </div>
 
       <ul className="mt-4 space-y-3">

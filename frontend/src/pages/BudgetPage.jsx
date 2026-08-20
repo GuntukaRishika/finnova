@@ -4,8 +4,9 @@ import { FaPlus } from 'react-icons/fa'
 import { addBudget, deleteBudget, getBudgets, updateBudget } from '../api/budgetApi'
 import { getCategories } from '../api/categoryApi'
 import {
-  getNotifications,
-  markAllNotificationsAsRead,
+  getBudgetNotifications,
+  deleteAllBudgetNotifications,
+  markAllBudgetNotificationsAsRead,
   markNotificationAsRead,
 } from '../api/notificationApi'
 import BudgetForm from '../components/budget/BudgetForm'
@@ -62,7 +63,7 @@ function BudgetPage() {
   useEffect(() => {
     let isCancelled = false
     setIsNotificationsLoading(true)
-    getNotifications({ page: 0, size: 10 })
+    getBudgetNotifications({ page: 0, size: 10 })
       .then((data) => {
         if (!isCancelled) setNotifications(data.content ?? [])
       })
@@ -121,7 +122,13 @@ function BudgetPage() {
 
   const handleMarkAllAsRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-    await markAllNotificationsAsRead()
+    await markAllBudgetNotificationsAsRead()
+  }
+
+  const handleClearAlerts = async () => {
+    if (!window.confirm('Clear all budget alerts? This cannot be undone.')) return
+    await deleteAllBudgetNotifications()
+    setNotifications([])
   }
 
   const totalLimit = budgets.reduce((sum, b) => sum + Number(b.amount), 0)
@@ -197,6 +204,7 @@ function BudgetPage() {
             isLoading={isNotificationsLoading}
             onMarkAsRead={handleMarkAsRead}
             onMarkAllAsRead={handleMarkAllAsRead}
+            onClear={handleClearAlerts}
           />
 
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
