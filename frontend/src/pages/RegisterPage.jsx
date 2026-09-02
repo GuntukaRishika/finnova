@@ -28,7 +28,6 @@ function RegisterPage() {
     <div className="mx-auto flex min-h-[80vh] max-w-6xl items-center justify-center px-6 py-16">
       <div className="grid w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:grid-cols-[1fr_0.95fr]">
         <div className="bg-gradient-to-br from-slate-900 to-emerald-700 p-10 text-white">
-          <p className="text-sm uppercase tracking-[0.25em] text-emerald-100">Week 2</p>
           <h1 className="mt-3 text-3xl font-semibold">Create your account</h1>
           <p className="mt-4 text-sm leading-7 text-emerald-50">
             Register to start tracking income, expenses, and goals with a secure first step.
