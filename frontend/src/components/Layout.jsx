@@ -16,9 +16,9 @@ function Layout({ children }) {
             Finnova
           </Link>
           <nav className="hidden gap-6 text-sm font-medium text-slate-600 md:flex">
-            <a href="#features" className="hover:text-emerald-600">Features</a>
-            <a href="#about" className="hover:text-emerald-600">About</a>
-            <a href="#contact" className="hover:text-emerald-600">Contact</a>
+            <Link to="/features" className="hover:text-emerald-600">Features</Link>
+            <Link to="/about" className="hover:text-emerald-600">About</Link>
+            <Link to="/contact" className="hover:text-emerald-600">Contact</Link>
             {auth.isAuthenticated ? (
               <>
                 <Link to="/dashboard" className="hover:text-emerald-600">Dashboard</Link>

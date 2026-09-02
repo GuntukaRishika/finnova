@@ -34,12 +34,12 @@ function LandingPage() {
             Finnova helps you manage income, expenses, budgets, and savings goals in one polished experience.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link to="/" className="rounded-full bg-emerald-600 px-5 py-3 font-medium text-white shadow-sm hover:bg-emerald-700">
+            <Link to="/register" className="rounded-full bg-emerald-600 px-5 py-3 font-medium text-white shadow-sm hover:bg-emerald-700">
               Get started
             </Link>
-            <a href="#features" className="rounded-full border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:border-emerald-500 hover:text-emerald-600">
+            <Link to="/features" className="rounded-full border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:border-emerald-500 hover:text-emerald-600">
               Explore features
-            </a>
+            </Link>
           </div>
         </div>
 
